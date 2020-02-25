@@ -32,8 +32,8 @@ struct trace_filter {
     enum trace_dir dir;
     bool raw;
     char *filename;
-    bool stdout;
-    bool stderr;
+    bool std_out;
+    bool std_err;
 
     FILE *tr;
 };
@@ -82,9 +82,9 @@ trace_try_connect(struct gensio_filter *filter, struct timeval *timeout)
 {
     struct trace_filter *tfilter = filter_to_trace(filter);
 
-    if (tfilter->stdout) {
+    if (tfilter->std_out) {
 	tfilter->tr = stdout;
-    } else if (tfilter->stderr) {
+    } else if (tfilter->std_err) {
 	tfilter->tr = stderr;
     } else if (tfilter->filename) {
 	tfilter->tr = fopen(tfilter->filename, "a+");
@@ -99,7 +99,7 @@ trace_try_disconnect(struct gensio_filter *filter, struct timeval *timeout)
 {
     struct trace_filter *tfilter = filter_to_trace(filter);
 
-    if (!tfilter->stdout && !tfilter->stderr && tfilter->tr)
+    if (!tfilter->std_out && !tfilter->std_err && tfilter->tr)
 	fclose(tfilter->tr);
     tfilter->tr = NULL;
     return 0;
@@ -351,8 +351,8 @@ gensio_trace_filter_raw_alloc(struct gensio_os_funcs *o, enum trace_dir dir,
 	if (!tfilter->filename)
 	    goto out_nomem;
     }
-    tfilter->stdout = stdout;
-    tfilter->stderr = stderr;
+    tfilter->std_out = stdout;
+    tfilter->std_err = stderr;
 
     tfilter->lock = o->alloc_lock(o);
     if (!tfilter->lock)
